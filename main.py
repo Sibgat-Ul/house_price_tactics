@@ -73,146 +73,51 @@ def normalize(train, test):
 train_data = pd.read_csv('./home_data/train.csv')
 test_data = pd.read_csv('./home_data/test.csv')
 
-df_train = train_data.copy()
-df_test = test_data.copy()
+train_data = applyChange(train_data)
 
-salesPrice = df_train['SalePrice']
-# print(salesPrice.describe())
-# print(salesPrice.skew(), salesPrice.kurt())
+# print()
+# described_data = train_data.describe().transpose()
+# described_data.to_csv('./home_data/described_data.csv')
 
-var = 'GrLivArea'
-data = pd.concat([df_train['SalePrice'], df_train[var]], axis=1)
-data.plot.scatter(x=var, y='SalePrice', ylim=(0, 800000));
-#plt.show()
+trainDataSub1 = train_data[
+    ['LotFrontage','MasVnrArea','BsmtFinSF1','1stFlrSF',
+     'TotalBsmtSF','GrLivArea','GarageArea','OpenPorchSF',
+     'TotRmsAbvGrd','WoodDeckSF','BedroomAbvGr','SalePrice']
+]
 
-var = 'TotalBsmtSF'
-data = pd.concat([df_train['SalePrice'], df_train[var]], axis=1)
-data.plot.scatter(x=var, y='SalePrice', ylim=(0, 800000));
-#plt.show()
-
-var = 'OverallQual'
-data = pd.concat([df_train['SalePrice'], df_train[var]], axis=1)
-f, ax = plt.subplots(figsize=(8, 6))
-sns.boxplot(x=var, y="SalePrice", data=data);
-#plt.show()
-
-corrmat = df_train.corr(numeric_only=True);
-f, ax = plt.subplots(figsize=(12, 9))
-sns.heatmap(corrmat, square=True);
-#plt.show()
-
-cols = corrmat.nlargest(10, 'SalePrice')['SalePrice'].index
-cm = np.corrcoef(df_train[cols].values.T)
-#print(cm)
-sns.set(font_scale=1.25);
-hm = sns.heatmap(cm, cbar=True, annot=True, square=True, fmt='.2f', annot_kws={'size': 10}, yticklabels=cols.values, xticklabels=cols.values)
-#plt.show()
-rem_cols = ['GarageArea', '1stFlrSf']
-
-cols = [col for col in cols if col not in rem_cols]
-sns.pairplot(df_train[cols], height=2.5)
-#plt.show()
-
-total = df_train.isnull().sum().sort_values(ascending=False)
-percent = (df_train.isnull().sum() / df_train.isnull().count()).sort_values(ascending=False)
-
-missing_data = pd.concat([total, percent], axis=1, keys=['Total', 'Percent']);
-#print(missing_data.head(20))
-
-df_train = df_train.drop((missing_data[missing_data['Total'] > 1]).index, 1)
-df_train['Electrical'] = df_train['Electrical'].fillna('Mix')
-#print(df_train.info())
-#df_train = df_train.drop(df_train.loc[df_train['Electrical'].isnull()].index)
-
-#normalize(df_train, df_test)
-
-salesPrice_scaled = StandardScaler().fit_transform(df_train['SalePrice'][:, np.newaxis]);
-low_range = salesPrice_scaled[salesPrice_scaled[:, 0].argsort()][:10]
-high_range = salesPrice_scaled[salesPrice_scaled[:, 0].argsort()][-10:]
-
-sns.displot(df_train['SalePrice'], kde=True, color='b');
-fig = plt.figure()
-res = stats.probplot(df_train['SalePrice'], plot=plt)
-
-df_train['SalePrice'] = np.log(df_train['SalePrice'])
-sns.displot(df_train['SalePrice'], kde=True, color='b');
-fig = plt.figure()
-res = stats.probplot(df_train['SalePrice'], plot=plt)
-#plt.show()
-
-sns.displot(df_train['GrLivArea'], kde=True, color='b');
-fig = plt.figure()
-res = stats.probplot(df_train['GrLivArea'], plot=plt)
-
-df_train['GrLivArea'] = np.log(df_train['GrLivArea'])
-sns.displot(df_train['GrLivArea'], kde=True, color='b');
-fig = plt.figure()
-res = stats.probplot(df_train['GrLivArea'], plot=plt)
-
-sns.displot(df_train['TotalBsmtSF'], kde=True, color='b');
-fig = plt.figure()
-res = stats.probplot(df_train['TotalBsmtSF'], plot=plt)
-
-df_train['TotalBsmtSF'] = np.log(df_train['TotalBsmtSF'])
-sns.displot(df_train['TotalBsmtSF'], kde=True, color='b');
-fig = plt.figure()
-res = stats.probplot(df_train['TotalBsmtSF'], plot=plt)
-
-var = 'GrLivArea'
-data = pd.concat([df_train['SalePrice'], df_train[var]], axis=1)
-data.plot.scatter(x=var, y='SalePrice');
-
-var = 'TotalBsmtSF'
-data = pd.concat([df_train['SalePrice'], df_train[var]], axis=1)
-data.plot.scatter(x=var, y='SalePrice');
-plt.show()
-
-print(salesPrice_scaled)
-# train_data = applyChange(train_data)
+# plt.rcParams['figure.facecolor'] = 'white'
+# train_data.hist(bins=50, figsize=(20,15))
 #
-# # print()
-# # described_data = train_data.describe().transpose()
-# # described_data.to_csv('./home_data/described_data.csv')
+# plt.rcParams['figure.facecolor'] = 'white'
+# pd.plotting.scatter_matrix(trainDataSub1, alpha=0.2, figsize=(20, 20), diagonal='kde');
 #
-# trainDataSub1 = train_data[
-#     ['LotFrontage','MasVnrArea','BsmtFinSF1','1stFlrSF',
-#      'TotalBsmtSF','GrLivArea','GarageArea','OpenPorchSF',
-#      'TotRmsAbvGrd','WoodDeckSF','BedroomAbvGr','SalePrice']
-# ]
-#
-# # plt.rcParams['figure.facecolor'] = 'white'
-# # train_data.hist(bins=50, figsize=(20,15))
-# #
-# # plt.rcParams['figure.facecolor'] = 'white'
-# # pd.plotting.scatter_matrix(trainDataSub1, alpha=0.2, figsize=(20, 20), diagonal='kde');
-# #
-# # plt.show()
-#
-# cluster1 = ['LotFrontage','LotArea'] # yes strong correlation
-# cluster2 = ['Street','Alley'] # categorical
-# cluster3 = ['OverallQual','OverallCond']
-# cluster4 = ['ExterQual','ExterCond'] # categorical
-# cluster5 = ['BsmtQual','BsmtCond'] # categorical
-# cluster6 = ['1stFlrSF','TotalBsmtSF','GrLivArea'] # yes strong correlation
-# cluster7 = ['GarageQual','GarageCond'] # categorical
-#
-# # Numeric cols
-# train_data_quan = train_data[cluster1 + cluster3 + cluster6]
-# # plt.rcParams['figure.facecolor'] = 'white'
-# # pd.plotting.scatter_matrix(train_data_quan, alpha=0.2, figsize=(20, 20), diagonal='kde');
-# # plt.show()
-#
-# # Categorical
-# cluster2_map = {'Grvl': 2, 'Pave': 1, 'None': 0};
-# cluster_else = {'Ex': 5, 'Gd': 4, 'TA': 3, 'Fa': 2, 'Po': 1, 'None': 0};
-#
-# train_cluster_2 = train_data[cluster2].copy()
-# train_cluster_4 = train_data[cluster4].copy()
-# train_cluster_5 = train_data[cluster5].copy()
-# train_cluster_7 = train_data[cluster7].copy()
-#
-# for i in range(len(cluster2)):
-#     train_cluster_2[cluster2[i]] = train_cluster_2[cluster2[i]].map(cluster2_map)
-#     train_cluster_4[cluster4[i]] = train_cluster_4[cluster4[i]].map(cluster_else)
-#     train_cluster_5[cluster5[i]] = train_cluster_5[cluster5[i]].map(cluster_else)
-#     train_cluster_7[cluster7[i]] = train_cluster_7[cluster7[i]].map(cluster_else)
+# plt.show()
+
+cluster1 = ['LotFrontage','LotArea'] # yes strong correlation
+cluster2 = ['Street','Alley'] # categorical
+cluster3 = ['OverallQual','OverallCond']
+cluster4 = ['ExterQual','ExterCond'] # categorical
+cluster5 = ['BsmtQual','BsmtCond'] # categorical
+cluster6 = ['1stFlrSF','TotalBsmtSF','GrLivArea'] # yes strong correlation
+cluster7 = ['GarageQual','GarageCond'] # categorical
+
+# Numeric cols
+train_data_quan = train_data[cluster1 + cluster3 + cluster6]
+# plt.rcParams['figure.facecolor'] = 'white'
+# pd.plotting.scatter_matrix(train_data_quan, alpha=0.2, figsize=(20, 20), diagonal='kde');
+# plt.show()
+
+# Categorical
+cluster2_map = {'Grvl': 2, 'Pave': 1, 'None': 0};
+cluster_else = {'Ex': 5, 'Gd': 4, 'TA': 3, 'Fa': 2, 'Po': 1, 'None': 0};
+
+train_cluster_2 = train_data[cluster2].copy()
+train_cluster_4 = train_data[cluster4].copy()
+train_cluster_5 = train_data[cluster5].copy()
+train_cluster_7 = train_data[cluster7].copy()
+
+for i in range(len(cluster2)):
+    train_cluster_2[cluster2[i]] = train_cluster_2[cluster2[i]].map(cluster2_map)
+    train_cluster_4[cluster4[i]] = train_cluster_4[cluster4[i]].map(cluster_else)
+    train_cluster_5[cluster5[i]] = train_cluster_5[cluster5[i]].map(cluster_else)
+    train_cluster_7[cluster7[i]] = train_cluster_7[cluster7[i]].map(cluster_else)
